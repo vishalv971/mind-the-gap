@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { route } from 'preact-router';
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useCallback } from 'preact/hooks';
 import { Button } from 'semantic-ui-react';
 import { dlr } from '../utils/dlr';
 import { overground } from '../utils/overground';
@@ -13,44 +13,50 @@ export function MindTheGap() {
     const [currentStation, setCurrentStation] = useState(getRandomStation());
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // Function to return a random station from the list
     function getRandomStation() {
         return stationsData[Math.floor(Math.random() * stationsData.length)];
     }
 
-    function handleGuess(zone) {
-        // Split the zone string at the '/' character
-        const guessedZones = zone.split('/');
+    const handleGuess = useCallback(
+        zone => {
+            const guessedZones = zone.split('/');
+            const guessedCorrectly = guessedZones.some(
+                guessedZone => guessedZone === currentStation.zone,
+            );
 
-        // Check if the guessed zone matches any of the current station's possible zones
-        const guessedCorrectly = guessedZones.some(
-            guessedZone => guessedZone === currentStation.zone,
-        );
+            if (guessedCorrectly) {
+                setScore(prevScore => prevScore + 1);
+                setToast({
+                    show: true,
+                    message: 'Hooray! 🎉',
+                    type: 'success',
+                });
+            } else {
+                setHighScore(prevHighScore => Math.max(prevHighScore, score));
+                setScore(0);
+                setToast({ show: true, message: 'Oh no! 😢', type: 'error' });
+            }
 
-        if (guessedCorrectly) {
-            // Update score immutably
-            setScore(prevScore => prevScore + 1);
-        } else {
-            // Update high score if the current score is higher
-            setHighScore(prevHighScore => Math.max(prevHighScore, score));
-            // Reset score on incorrect guess
-            setScore(0);
-        }
-
-        // Set a new random station after each guess
-        setCurrentStation(getRandomStation());
-    }
+            setTimeout(
+                () => setToast({ show: false, message: '', type: '' }),
+                3000,
+            );
+            setCurrentStation(getRandomStation());
+        },
+        [currentStation, score],
+    );
 
     return (
-        <div class="flex items-center justify-center min-h-screen bg-gray-100">
-            <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full mx-4 border-4 border-blue-600">
-                <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+            <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto border-4 border-blue-600">
+                <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-blue-600">
                     🚇 London Tube Zone Quiz
                 </h1>
-                <div class="text-xl mb-8 text-center bg-yellow-100 p-4 rounded-lg shadow-inner">
+                <div className="text-lg md:text-xl mb-6 md:mb-8 text-center bg-yellow-100 p-4 rounded-lg shadow-inner">
                     Which zone is{' '}
-                    <strong class="text-blue-700 font-semibold">
+                    <strong className="text-blue-700 font-semibold">
                         {currentStation.name}
                     </strong>{' '}
                     in?
@@ -113,16 +119,29 @@ export function MindTheGap() {
                     </button>
                 </div>
 
-                <div class="flex justify-between items-center text-lg px-4 py-3 bg-blue-100 rounded-lg">
-                    <p class="font-semibold text-blue-800">
-                        Score: <span class="text-blue-600">{score}</span>
+                <div className="flex justify-between items-center text-base md:text-lg px-4 py-3 bg-blue-100 rounded-lg">
+                    <p className="font-semibold text-blue-800">
+                        Score: <span className="text-blue-600">{score}</span>
                     </p>
-                    <p class="font-semibold text-blue-800">
+                    <p className="font-semibold text-blue-800">
                         High Score:{' '}
-                        <span class="text-blue-600">{highScore}</span> 🏆
+                        <span className="text-blue-600">{highScore}</span> 🏆
                     </p>
                 </div>
             </div>
+            {toast.show && (
+                <div
+                    className={`
+                    fixed top-4 left-1/2 transform -translate-x-1/2
+                    px-4 py-2 rounded-md shadow-lg
+                    ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}
+                    text-white text-sm md:text-base
+                    z-50 animate-fade-in-down
+                `}
+                >
+                    {toast.message}
+                </div>
+            )}
         </div>
     );
 }
