@@ -1,11 +1,9 @@
-import { h } from 'preact';
-import { route } from 'preact-router';
 import { useState, useEffect, useCallback } from 'preact/hooks';
-import { Button } from 'semantic-ui-react';
 import { dlr } from '../utils/dlr';
 import { overground } from '../utils/overground';
 import { trams } from '../utils/trams';
 import { underground } from '../utils/underground';
+import { Link } from 'preact-router/match';
 
 const stationsData = [...dlr, ...overground, ...trams, ...underground];
 
@@ -76,7 +74,6 @@ export function MindTheGap({ mode = 'zone1-3' }) {
                     </strong>{' '}
                     in?
                 </div>
-
                 <div class="grid grid-cols-3 gap-4 mb-8">
                     {zoneButtons.map(zone => (
                         <button
@@ -101,7 +98,6 @@ export function MindTheGap({ mode = 'zone1-3' }) {
                         </button>
                     ))}
                 </div>
-
                 <div className="flex justify-between items-center text-base md:text-lg px-4 py-3 bg-blue-100 rounded-lg">
                     <p className="font-semibold text-blue-800">
                         Score: <span className="text-blue-600">{score}</span>
@@ -110,6 +106,14 @@ export function MindTheGap({ mode = 'zone1-3' }) {
                         High Score:{' '}
                         <span className="text-blue-600">{highScore}</span> 🏆
                     </p>
+                </div>
+                <div className="flex justify-center mt-4">
+                    <Link
+                        href="/"
+                        className="bg-white border-2 border-blue-500 text-blue-500 font-bold py-2 px-4 rounded-full shadow-sm hover:bg-blue-100 hover:border-blue-600 hover:text-blue-600 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+                    >
+                        Go Back
+                    </Link>
                 </div>
             </div>
             {toast.show && (
