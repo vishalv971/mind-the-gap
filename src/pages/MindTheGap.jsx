@@ -9,14 +9,26 @@ import { underground } from '../utils/underground';
 
 const stationsData = [...dlr, ...overground, ...trams, ...underground];
 
-export function MindTheGap() {
+export function MindTheGap({ mode = 'zone1-3' }) {
     const [currentStation, setCurrentStation] = useState(getRandomStation());
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    function getRandomStation() {
-        return stationsData[Math.floor(Math.random() * stationsData.length)];
+    useEffect(() => {
+        setCurrentStation(getRandomStation(mode));
+    }, [mode]);
+
+    function getRandomStation(selectedMode) {
+        const filteredStations =
+            selectedMode === 'zone1-3'
+                ? stationsData.filter(station =>
+                      ['1', '2', '3'].includes(station.zone),
+                  )
+                : stationsData;
+        return filteredStations[
+            Math.floor(Math.random() * filteredStations.length)
+        ];
     }
 
     const handleGuess = useCallback(
@@ -43,10 +55,13 @@ export function MindTheGap() {
                 () => setToast({ show: false, message: '', type: '' }),
                 3000,
             );
-            setCurrentStation(getRandomStation());
+            setCurrentStation(getRandomStation(mode));
         },
-        [currentStation, score],
+        [currentStation, score, mode],
     );
+
+    const zoneButtons =
+        mode === 'zone1-3' ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -63,60 +78,28 @@ export function MindTheGap() {
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 mb-8">
-                    <button
-                        onClick={() => handleGuess('1')}
-                        class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300"
-                    >
-                        1
-                    </button>
-                    <button
-                        onClick={() => handleGuess('2')}
-                        class="bg-blue-200 hover:bg-blue-300 text-blue-800 font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
-                    >
-                        2
-                    </button>
-                    <button
-                        onClick={() => handleGuess('3')}
-                        class="bg-blue-300 hover:bg-blue-400 text-blue-800 font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                        3
-                    </button>
-                    <button
-                        onClick={() => handleGuess('4')}
-                        class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
-                    >
-                        4
-                    </button>
-                    <button
-                        onClick={() => handleGuess('5')}
-                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700"
-                    >
-                        5
-                    </button>
-                    <button
-                        onClick={() => handleGuess('6')}
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800"
-                    >
-                        6
-                    </button>
-                    <button
-                        onClick={() => handleGuess('7')}
-                        class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-900"
-                    >
-                        7
-                    </button>
-                    <button
-                        onClick={() => handleGuess('8')}
-                        class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-950"
-                    >
-                        8
-                    </button>
-                    <button
-                        onClick={() => handleGuess('9')}
-                        class="bg-blue-900 hover:bg-blue-950 text-white font-bold py-4 px-6 rounded-full shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-950"
-                    >
-                        9
-                    </button>
+                    {zoneButtons.map(zone => (
+                        <button
+                            key={zone}
+                            onClick={() => handleGuess(zone.toString())}
+                            className={`
+                                bg-blue-${zone * 100} hover:bg-blue-${Math.min(
+                                (zone + 1) * 100,
+                                900,
+                            )} 
+                                text-black
+                                font-bold py-3 md:py-4 px-4 md:px-6 rounded-full shadow-md 
+                                transition duration-300 ease-in-out transform hover:scale-105 
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-${Math.min(
+                                    (zone + 2) * 100,
+                                    900,
+                                )}
+                                text-sm md:text-base
+                            `}
+                        >
+                            {zone}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="flex justify-between items-center text-base md:text-lg px-4 py-3 bg-blue-100 rounded-lg">
